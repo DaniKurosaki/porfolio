@@ -1,6 +1,6 @@
 import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
-import vercel from '@astrojs/vercel/serverless';
+import { inject } from "@vercel/analytics";
 
 import robotsTxt from "astro-robots-txt";
 
@@ -8,8 +8,6 @@ import robotsTxt from "astro-robots-txt";
 export default defineConfig({
 	integrations: [tailwind(), robotsTxt()],
 	site: "https://porfolio.dev/",
-	output: "server",
-	adapter: vercel({
-		webAnalytics: { enabled: true },
-	}),
 });
+
+inject();
