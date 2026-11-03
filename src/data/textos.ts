@@ -6,14 +6,14 @@ export const TEXTOS = {
 	meta: {
 		titulo: "Daniel Castillo Tamayo — Ingeniero de software frontend",
 		descripcion:
-			"Portfolio de Daniel Castillo Tamayo, ingeniero de software especializado en frontend: de los circuitos de la infancia a interfaces en Angular para ministerios, aseguradoras y startups.",
+			"Portfolio de Daniel Castillo Tamayo, ingeniero de software especializado en frontend: de los circuitos de la infancia a interfaces en Angular para ministerios, aseguradoras, distribución y startups.",
 	},
 
 	hero: {
 		etiqueta: "Portfolio",
 		lineas: ["Daniel", "Castillo"],
 		intro:
-			"Ingeniero de software especializado en frontend. Entrego código de calidad en Angular para administraciones públicas, aseguradoras y startups, siguiendo los estándares web actuales.",
+			"Ingeniero de software especializado en frontend. Entrego código de calidad en Angular para administraciones públicas, aseguradoras, distribución y startups, siguiendo los estándares web actuales.",
 		scroll: "Desliza",
 		lema: "Del circuito al código",
 		stack: "Angular · TypeScript · Express",

@@ -37,10 +37,17 @@ export const EXPERIENCIA: Puesto[] = [
 	},
 	{
 		anio: "2024",
-		fechas: "Julio 2024 — Actualidad",
+		fechas: "Julio 2024 — Julio 2026",
 		puesto: "Desarrollador Full Stack",
 		empresa: "Tich Consulting",
 		descripcion: "Mejora y desarrollo de proyectos Angular y Express con TypeScript para la empresa tecnológica de la aseguradora ASISA.",
+	},
+	{
+		anio: "2026",
+		fechas: "Julio 2026 — Actualidad",
+		puesto: "Desarrollador Frontend",
+		empresa: "Mercadona S.A.",
+		descripcion: "Desarrollo desde cero de nuevas aplicaciones Angular para tiendas, logística y gestión interna, con signals y un design system propio, alguna ya en producción.",
 		actual: true,
 	},
 ];
