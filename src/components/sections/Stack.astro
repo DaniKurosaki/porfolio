@@ -33,13 +33,20 @@ const COPIAS = 2;
 		{t.items.map((item) => <li>{item}</li>)}
 	</ul>
 
+	<!-- Con movimiento reducido no corre: queda la fila maciza, una copia partida en líneas
+	     dentro de la rejilla, para que se lean todas las tecnologías. -->
 	<div aria-hidden="true" class="mt-12 lg:mt-16">
 		{
 			filas.map((fila, f) => (
-				<div class:list={["py-3 lg:py-5", f > 0 && "border-t border-ink/15"]}>
-					<div data-row class="flex w-max will-change-transform">
-						{Array.from({ length: COPIAS }, () => (
-							<div class="display text-huge flex shrink-0 items-center">
+				<div class:list={["py-3 lg:py-5", f > 0 && "border-t border-ink/15 motion-reduce:hidden"]}>
+					<div data-row class="flex w-max will-change-transform motion-reduce:shell motion-reduce:w-auto">
+						{Array.from({ length: COPIAS }, (_, c) => (
+							<div
+								class:list={[
+									"display text-huge flex shrink-0 items-center",
+									c > 0 ? "motion-reduce:hidden" : "motion-reduce:shrink motion-reduce:flex-wrap",
+								]}
+							>
 								{fila.items.map((item) => (
 									<span class="flex items-center">
 										<span class:list={["whitespace-nowrap", fila.contorno && "text-outline"]}>{item}</span>

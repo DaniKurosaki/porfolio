@@ -40,8 +40,8 @@ export function getLenis() {
 	return lenis;
 }
 
-/** Sube al principio sin pelearse con Lenis. */
+/** Sube al principio sin pelearse con Lenis; con movimiento reducido, de golpe. */
 export function scrollToTop() {
 	if (lenis) lenis.scrollTo(0);
-	else window.scrollTo({ top: 0, behavior: "smooth" });
+	else window.scrollTo({ top: 0, behavior: window.matchMedia(MQ.motion).matches ? "smooth" : "auto" });
 }

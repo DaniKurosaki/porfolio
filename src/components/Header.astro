@@ -73,16 +73,22 @@ const enlaces = CAPITULOS.filter((c) => c.enNav);
 		ScrollTrigger.addEventListener("refresh", queue);
 		queue();
 
-		// Se esconde al bajar pasados 240 px y vuelve en cuanto se sube.
+		// Se esconde al bajar pasados 240 px y vuelve en cuanto se sube. Con movimiento
+		// reducido también, pero sin transición: si no, se quedaría encima de los titulares.
 		const mm = gsap.matchMedia();
-		mm.add(MQ.motion, () => {
+		mm.add({ motion: MQ.motion, reduce: "(prefers-reduced-motion: reduce)" }, (ctx) => {
+			const animate = Boolean(ctx.conditions?.motion);
 			const hide = gsap.to(header, { yPercent: -100, duration: 0.6, ease: "power3.inOut", paused: true });
+			const show = (visible: boolean) => {
+				if (animate) visible ? hide.reverse() : hide.play();
+				else hide.progress(visible ? 0 : 1);
+			};
 			ScrollTrigger.create({
 				start: 0,
 				end: "max",
 				onUpdate: (self) => {
-					if (self.scroll() > 240 && self.direction === 1) hide.play();
-					else if (self.direction === -1) hide.reverse();
+					if (self.scroll() > 240 && self.direction === 1) show(false);
+					else if (self.direction === -1) show(true);
 				},
 			});
 		});

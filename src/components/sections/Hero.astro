@@ -160,8 +160,13 @@ const anio = new Date().getFullYear();
 			if (!shader) return;
 			shader.state.power = 1;
 			shader.state.fade = 1;
-			placeOrigin();
-			shader.still();
+			const paint = () => {
+				placeOrigin();
+				shader.still();
+			};
+			paint();
+			// Las fuentes mueven el led: se repinta con el origen ya en su sitio.
+			document.fonts?.ready.then(paint);
 		});
 	}
 </script>

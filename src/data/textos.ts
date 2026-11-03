@@ -92,7 +92,7 @@ export const TEXTOS = {
 	},
 
 	pie: {
-		derechos: "Casi todos los derechos reservados (Fork del porfolio de Miguel Ángel Durán)",
+		derechos: "Todos los derechos reservados.",
 		arriba: "Volver arriba",
 	},
 } as const;
