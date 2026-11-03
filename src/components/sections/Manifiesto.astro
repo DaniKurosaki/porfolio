@@ -5,10 +5,18 @@ import RevealLines from "@/components/motion/RevealLines.astro";
 import RevealImage from "@/components/motion/RevealImage.astro";
 import Parallax from "@/components/motion/Parallax.astro";
 import Roll from "@/components/motion/Roll.astro";
+import FadeUp from "@/components/motion/FadeUp.astro";
 import { CAPITULOS, PERFIL } from "@/data/perfil";
+import { EXPERIENCIA } from "@/data/experiencia";
 import { TEXTOS } from "@/data/textos";
 
 const t = TEXTOS.manifiesto;
+// La última fila de la ficha es el puesto actual, sacado de la experiencia.
+const actual = EXPERIENCIA.find((p) => p.actual);
+const ficha: { clave: string; valor: string; actual?: boolean }[] = [
+	...t.ficha,
+	...(actual ? [{ clave: t.ahora, valor: `${actual.puesto} en ${actual.empresa.replace(/ S\.A\.$/, "")}`, actual: true }] : []),
+];
 // El capítulo que viene después: la composición acaba con un enlace a él.
 const siguiente = CAPITULOS[1];
 ---
@@ -16,8 +24,9 @@ const siguiente = CAPITULOS[1];
 <!--
 	Capítulo 01, el manifiesto. Una frase grande cuyas palabras se encienden al ritmo del
 	scroll (ScrubWords) y, debajo, una composición desplazada: el retrato a la izquierda y
-	bajado, con dos profundidades (Parallax en el marco y RevealImage dentro), y el relato a
-	la derecha, con el enlace al capítulo siguiente al pie de la foto. Sin JS o con
+	bajado, con dos profundidades (Parallax en el marco y RevealImage dentro), y a la derecha
+	el relato y una ficha técnica que acaba en el puesto actual, con el enlace al capítulo
+	siguiente al pie de la foto. Sin JS o con
 	movimiento reducido, la frase está sólida y todo quieto; en móvil se apila.
 -->
 <section
@@ -37,7 +46,7 @@ const siguiente = CAPITULOS[1];
 
 		<div class="mt-20 grid grid-cols-12 gap-x-5 gap-y-16 md:mt-28 lg:mt-36">
 			<!-- El retrato, bajado respecto al relato: el desfase es un margen, el movimiento lo pone Parallax. -->
-			<div class="col-span-12 sm:col-span-9 md:col-span-7 lg:col-span-5 lg:mt-40">
+			<div class="col-span-12 sm:col-span-8 md:col-span-6 lg:col-span-4 lg:mt-24">
 				<Parallax speed={-8}>
 					<figure>
 						<RevealImage
@@ -57,10 +66,30 @@ const siguiente = CAPITULOS[1];
 			</div>
 
 			<!-- El relato arriba y el enlace al siguiente capítulo al pie, a la altura del pie de foto. -->
-			<div class="col-span-12 flex flex-col justify-between gap-16 lg:col-span-6 lg:col-start-7">
-				<RevealLines as="p" class="max-w-[42ch] text-lg text-paper/70 md:text-xl">
-					{t.parrafo}
-				</RevealLines>
+			<div class="col-span-12 flex flex-col justify-between gap-16 lg:col-span-7 lg:col-start-6">
+				<div>
+					<RevealLines as="p" class="max-w-[38ch] text-xl leading-snug text-paper/80 md:text-2xl">
+						{t.parrafo}
+					</RevealLines>
+
+					<!-- La ficha técnica: lo esencial de un vistazo, con filetes como en un plano. -->
+					<FadeUp as="dl" stagger={0.08} class="mt-14 border-b border-paper/15 lg:mt-20">
+						{
+							ficha.map((fila) => (
+								<div class="grid grid-cols-12 gap-x-5 gap-y-2 border-t border-paper/15 py-5">
+									<dt class="text-label col-span-12 flex items-center gap-3 text-paper/50 sm:col-span-4">
+										<span class="size-[5px] shrink-0 bg-current" aria-hidden="true" />
+										{fila.clave}
+									</dt>
+									<dd class:list={["col-span-12 text-lg sm:col-span-8", fila.actual ? "text-paper" : "text-paper/80"]}>
+										{fila.actual && <span class="led led-pulse mr-3 align-middle" aria-hidden="true" />}
+										{fila.valor}
+									</dd>
+								</div>
+							))
+						}
+					</FadeUp>
+				</div>
 
 				<a
 					href={`#${siguiente.id}`}

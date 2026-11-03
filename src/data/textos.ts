@@ -23,8 +23,16 @@ export const TEXTOS = {
 		frase:
 			"Del primer circuito a la última interfaz, el oficio es el mismo: entender cómo funciona algo por dentro para que, por fuera, parezca sencillo.",
 		parrafo:
-			"Soy Daniel Castillo Tamayo, licenciado en Ingeniería Multimedia y apasionado por la tecnología. Llevo más de cinco años construyendo aplicaciones web para ministerios, aseguradoras y startups.",
+			"Soy Daniel Castillo Tamayo, licenciado en Ingeniería Multimedia y apasionado por la tecnología. Llevo más de cinco años construyendo aplicaciones web para ministerios, aseguradoras, distribución y startups.",
 		fotoAlt: "Daniel Castillo Tamayo",
+		/** La ficha técnica junto al retrato. «Ahora» la añade la sección con el puesto actual. */
+		ficha: [
+			{ clave: "Formación", valor: "Ingeniería Multimedia" },
+			{ clave: "Experiencia", valor: "Más de cinco años en frontend" },
+			{ clave: "Especialidad", valor: "Angular · TypeScript · Design systems" },
+			{ clave: "Sectores", valor: "Administración pública · Seguros · Distribución · Startups" },
+		],
+		ahora: "Ahora",
 	},
 
 	origen: {
