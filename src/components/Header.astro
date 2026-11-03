@@ -1,5 +1,96 @@
 ---
-// Provisional.
+import Roll from "@/components/motion/Roll.astro";
+import { CAPITULOS, PERFIL } from "@/data/perfil";
+
+const enlaces = CAPITULOS.filter((c) => c.enNav);
 ---
 
-<header class="fixed inset-x-0 top-0 z-50"></header>
+<!--
+	Cabecera fija y mínima: iniciales a la izquierda y los capítulos a la derecha. Se
+	esconde al bajar y vuelve al subir; cambia a tinta sobre los capítulos claros y marca
+	en amarillo el capítulo en el que se está (lo anuncia Spine con `chapter:change`).
+-->
+<header data-header class="fixed inset-x-0 top-0 z-50 text-paper transition-colors duration-500">
+	<div class="shell flex items-center justify-between gap-6 py-5">
+		<a href="#inicio" class="group flex items-center gap-3" aria-label={`${PERFIL.nombre}, volver al inicio`}>
+			<span class="display text-2xl leading-none">{PERFIL.iniciales}</span>
+			<span class="text-label hidden opacity-60 sm:block"><Roll text={PERFIL.nombreCorto} /></span>
+		</a>
+
+		<nav aria-label="Principal">
+			<ul class="text-label flex items-center gap-5 md:gap-8">
+				{
+					enlaces.map((c) => (
+						<li class:list={[c.id !== "contacto" && "hidden md:block"]}>
+							<a href={`#${c.id}`} data-nav={c.id} class="group flex items-center gap-2">
+								<span data-nav-led class="size-1.5 rounded-full bg-current opacity-0 transition-opacity duration-500" />
+								<Roll text={c.nav} />
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+	</div>
+</header>
+
+<style>
+	[data-header].is-light {
+		color: rgb(var(--ink));
+	}
+	[data-nav].is-active {
+		color: rgb(var(--volt));
+	}
+	[data-header].is-light [data-nav].is-active {
+		color: rgb(var(--ink));
+	}
+	[data-nav].is-active [data-nav-led] {
+		opacity: 1;
+	}
+</style>
+
+<script>
+	import { MQ, ScrollTrigger, gsap } from "@/scripts/motion";
+	import { isLightAt } from "@/scripts/surface";
+
+	const header = document.querySelector<HTMLElement>("[data-header]");
+	if (header) {
+		// Tinta sobre papel, papel sobre tinta: se mira qué fondo hay justo debajo.
+		let queued = false;
+		const sample = () => {
+			queued = false;
+			const r = header.getBoundingClientRect();
+			header.classList.toggle("is-light", isLightAt(window.innerWidth / 2, r.bottom - 8));
+		};
+		const queue = () => {
+			if (!queued) {
+				queued = true;
+				requestAnimationFrame(sample);
+			}
+		};
+		window.addEventListener("scroll", queue, { passive: true });
+		window.addEventListener("resize", queue, { passive: true });
+		ScrollTrigger.addEventListener("refresh", queue);
+		queue();
+
+		// Se esconde al bajar pasados 240 px y vuelve en cuanto se sube.
+		const mm = gsap.matchMedia();
+		mm.add(MQ.motion, () => {
+			const hide = gsap.to(header, { yPercent: -100, duration: 0.6, ease: "power3.inOut", paused: true });
+			ScrollTrigger.create({
+				start: 0,
+				end: "max",
+				onUpdate: (self) => {
+					if (self.scroll() > 240 && self.direction === 1) hide.play();
+					else if (self.direction === -1) hide.reverse();
+				},
+			});
+		});
+
+		const links = header.querySelectorAll<HTMLElement>("[data-nav]");
+		document.addEventListener("chapter:change", (e) => {
+			const id = (e as CustomEvent<string | null>).detail;
+			links.forEach((a) => a.classList.toggle("is-active", a.dataset.nav === id));
+		});
+	}
+</script>

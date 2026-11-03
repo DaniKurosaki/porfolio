@@ -1,5 +1,167 @@
 ---
-// Provisional.
+import { PERFIL } from "@/data/perfil";
+import { TEXTOS } from "@/data/textos";
+
+const t = TEXTOS.hero;
+const anio = new Date().getFullYear();
 ---
 
-<section id="inicio" class="flex h-[100svh] items-end bg-ink"><h1 class="shell display text-mega pb-10">Daniel<br />Castillo</h1></section>
+<!--
+	El hero: el nombre a toda pantalla sobre una placa de circuito (shader). El led que
+	cierra «Castillo» es donde empieza todo: al encenderse, la placa se ilumina desde él.
+	Sin WebGL queda un degradado; sin JS o con movimiento reducido, todo quieto y legible.
+-->
+<section id="inicio" class="relative h-[100svh] min-h-[600px] overflow-clip bg-ink">
+	<canvas data-hero-canvas class="absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
+	<div class="hero-fallback pointer-events-none absolute inset-0" aria-hidden="true"></div>
+	<div
+		class="pointer-events-none absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-ink via-ink/60 to-transparent"
+		aria-hidden="true"
+	>
+	</div>
+
+	<div data-hero-content class="shell relative flex h-full flex-col justify-between pb-8 pt-24 lg:pb-10 lg:pt-28">
+		<div data-intro class="text-label flex items-start justify-between gap-6 text-paper/60">
+			<span data-meta class="tabular-nums">(00) {t.etiqueta} — {anio}</span>
+			<span data-meta class="hidden md:block">{t.lema}</span>
+			<span data-meta class="flex items-center gap-3 text-paper">
+				<span class="led led-pulse" aria-hidden="true"></span>
+				{PERFIL.disponible}
+			</span>
+		</div>
+
+		<div>
+			<h1 data-intro class="display text-mega" aria-label={PERFIL.nombre}>
+				<span class="hero-mask"><span data-line class="block whitespace-nowrap">{t.lineas[0]}</span></span>
+				<span class="hero-mask lg:pl-[14vw]">
+					<span data-line class="block whitespace-nowrap"
+						>{t.lineas[1]}<span data-hero-led class="hero-led" aria-hidden="true"></span></span
+					>
+				</span>
+			</h1>
+
+			<div
+				data-intro
+				class="mt-8 grid grid-cols-1 items-end gap-6 border-t border-paper/15 pt-6 md:grid-cols-12 md:gap-5 lg:mt-10"
+			>
+				<p data-meta class="max-w-[46ch] text-base text-paper/70 md:col-span-6 md:text-lg lg:col-span-5">
+					{t.intro}
+				</p>
+				<div data-meta class="hidden items-center gap-4 md:col-span-2 md:flex lg:col-span-3 lg:justify-center">
+					<span class="relative block h-12 w-px overflow-hidden bg-paper/15" aria-hidden="true">
+						<span class="scroll-cue absolute inset-x-0 top-0 block h-1/2 bg-volt"></span>
+					</span>
+					<span class="text-label text-paper/60">{t.scroll}</span>
+				</div>
+				<div data-meta class="text-label flex flex-col gap-2 text-paper/60 md:col-span-4 md:items-end lg:col-span-4">
+					<span class="text-paper">{PERFIL.rol}</span>
+					<span>{t.stack}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	/* Máscara de cada línea del titular, con sitio para ascendentes y descendentes. */
+	.hero-mask {
+		display: block;
+		overflow: hidden;
+		padding-block: 0.06em;
+		margin-block: -0.06em;
+	}
+
+	/* El led del titular: un punto amarillo con brillo, en la línea base. */
+	.hero-led {
+		display: inline-block;
+		width: 0.15em;
+		height: 0.15em;
+		margin-left: 0.06em;
+		border-radius: 9999px;
+		background: rgb(var(--volt));
+		box-shadow:
+			0 0 0.12em rgb(var(--volt) / 0.9),
+			0 0 0.5em rgb(var(--volt) / 0.45);
+	}
+
+	/* Sin WebGL (lo marca el script) queda un resplandor que sale del led. */
+	.hero-fallback {
+		display: none;
+		background:
+			radial-gradient(60% 50% at 70% 72%, rgb(var(--volt) / 0.12), transparent 70%),
+			radial-gradient(80% 60% at 50% 0%, rgb(var(--paper) / 0.05), transparent 70%);
+	}
+	:global(.no-webgl) .hero-fallback {
+		display: block;
+	}
+</style>
+
+<script>
+	import { EASE, MQ, gsap } from "@/scripts/motion";
+	import { createHeroShader } from "@/scripts/hero-shader";
+
+	const hero = document.querySelector<HTMLElement>("#inicio");
+	const canvas = hero?.querySelector<HTMLCanvasElement>("[data-hero-canvas]");
+	const led = hero?.querySelector<HTMLElement>("[data-hero-led]");
+
+	if (hero && canvas && led) {
+		const shader = createHeroShader(canvas);
+		if (!shader) hero.classList.add("no-webgl");
+
+		// El encendido y la señal salen del led: se mide su centro respecto al canvas.
+		const placeOrigin = () => {
+			if (!shader) return;
+			const l = led.getBoundingClientRect();
+			const c = canvas.getBoundingClientRect();
+			shader.setOrigin(l.left + l.width / 2 - c.left, l.top + l.height / 2 - c.top);
+		};
+		window.addEventListener("resize", placeOrigin, { passive: true });
+		document.fonts?.ready.then(placeOrigin);
+
+		const mm = gsap.matchMedia();
+
+		mm.add(MQ.motion, () => {
+			const lines = hero.querySelectorAll("[data-line]");
+			const meta = hero.querySelectorAll("[data-meta]");
+			const rule = hero.querySelector(".border-t");
+
+			gsap.set(lines, { yPercent: 110 });
+			gsap.set(meta, { autoAlpha: 0, y: 18 });
+			gsap.set(led, { scale: 0 });
+			if (rule) gsap.set(rule, { borderColor: "rgb(237 234 227 / 0)" });
+			// Los estados iniciales ya están puestos: el texto puede dejar de esperar.
+			document.documentElement.classList.remove("motion-pending");
+
+			const intro = gsap.timeline({ delay: 0.15 });
+			intro
+				.to(lines, { yPercent: 0, duration: 1.5, ease: EASE, stagger: 0.12 })
+				.to(meta, { autoAlpha: 1, y: 0, duration: 1.1, ease: EASE, stagger: 0.07 }, 0.65)
+				.to(rule, { borderColor: "rgb(237 234 227 / 0.15)", duration: 1.2 }, 0.8)
+				.add(placeOrigin, 0.9)
+				.to(led, { scale: 1, duration: 0.7, ease: "back.out(3)" }, 0.95);
+
+			if (shader) {
+				shader.state.power = 0;
+				shader.state.fade = 1;
+				intro.to(shader.state, { power: 1, duration: 3.4, ease: "power2.inOut" }, 1.05);
+				shader.start();
+			}
+
+			// Al bajar, el titular sube y se apaga, y la placa se oscurece.
+			const out = gsap.timeline({
+				scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true },
+			});
+			out.to("[data-hero-content]", { yPercent: -16, ease: "none" }, 0);
+			out.to("[data-hero-content]", { autoAlpha: 0, ease: "none", duration: 0.7 }, 0);
+			if (shader) out.to(shader.state, { fade: 0.2, ease: "none" }, 0);
+		});
+
+		mm.add("(prefers-reduced-motion: reduce)", () => {
+			if (!shader) return;
+			shader.state.power = 1;
+			shader.state.fade = 1;
+			placeOrigin();
+			shader.still();
+		});
+	}
+</script>

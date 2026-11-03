@@ -1,5 +1,192 @@
 ---
-// Provisional.
+import { CAPITULOS } from "@/data/perfil";
 ---
 
-<nav aria-label="Capítulos" class="hidden"></nav>
+<!--
+	La espina de circuito: una pista fija en el lateral izquierdo (desde 1024 px) que se
+	llena de amarillo con el scroll y recorre los capítulos. Cada capítulo es una vía que
+	se enciende al llegar a él; la pista hace un quiebro a 45° entre una y otra. Las vías
+	son enlaces. Anuncia el capítulo activo con el evento `chapter:change`.
+-->
+<nav data-spine aria-label="Capítulos" class="fixed inset-y-0 left-0 z-40 hidden w-16 text-paper lg:block">
+	<div data-spine-track class="absolute bottom-36 left-6 top-28 w-6">
+		<svg class="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
+			<path data-spine-base fill="none" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></path>
+			<path
+				data-spine-fill
+				fill="none"
+				stroke="rgb(var(--volt))"
+				stroke-width="1.5"
+				pathLength="1"
+				stroke-dasharray="1"
+				stroke-dashoffset="1"
+				style="filter: drop-shadow(0 0 3px rgb(var(--volt) / 0.7))"></path>
+		</svg>
+		{
+			CAPITULOS.map((c) => (
+				<a
+					href={`#${c.id}`}
+					data-spine-node={c.id}
+					class="group absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 p-2"
+					aria-label={`${c.indice} ${c.nombre}`}
+				>
+					<span class="spine-via block size-[9px] rounded-full border border-current" />
+					<span class="text-label pointer-events-none absolute left-7 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+						({c.indice}) {c.nombre}
+					</span>
+				</a>
+			))
+		}
+	</div>
+	<p
+		data-spine-current
+		class="text-label absolute bottom-10 left-[1.9rem] origin-left -rotate-90 whitespace-nowrap opacity-60"
+		aria-hidden="true"
+	>
+	</p>
+</nav>
+
+<style>
+	[data-spine] {
+		transition: color 0.5s;
+	}
+	[data-spine].is-light {
+		color: rgb(var(--ink));
+	}
+	.spine-via {
+		background: rgb(var(--ink));
+		transition:
+			background-color 0.4s,
+			border-color 0.4s,
+			box-shadow 0.4s;
+	}
+	[data-spine].is-light .spine-via {
+		background: rgb(var(--paper));
+	}
+	[data-spine-node].is-on .spine-via {
+		background: rgb(var(--volt));
+		border-color: rgb(var(--volt));
+		box-shadow: 0 0 10px rgb(var(--volt) / 0.7);
+	}
+	/* Sin JS no hay medidas: la espina no se enseña. */
+	[data-spine]:not(.is-ready) {
+		visibility: hidden;
+	}
+</style>
+
+<script>
+	import { ScrollTrigger } from "@/scripts/motion";
+	import { isLightAt } from "@/scripts/surface";
+
+	const spine = document.querySelector<HTMLElement>("[data-spine]");
+	const track = spine?.querySelector<HTMLElement>("[data-spine-track]");
+	const base = spine?.querySelector<SVGPathElement>("[data-spine-base]");
+	const fill = spine?.querySelector<SVGPathElement>("[data-spine-fill]");
+	const current = spine?.querySelector<HTMLElement>("[data-spine-current]");
+
+	interface Chapter {
+		node: HTMLElement;
+		section: HTMLElement;
+		label: string;
+		trigger: ScrollTrigger;
+		y: number;
+	}
+
+	if (spine && track && base && fill && current) {
+		const chapters: Chapter[] = [];
+		// Longitud acumulada de la pista en cada altura, para llenar justo hasta cada vía.
+		let stops: { y: number; len: number }[] = [];
+		let height = 1;
+		let active: string | null | undefined;
+
+		const announce = () => {
+			const on = chapters.find((c) => c.trigger.isActive) ?? null;
+			const id = on ? on.section.id : null;
+			if (id === active) return;
+			active = id;
+			current.textContent = on ? on.label.replace(/^(\d+)/, "($1)") : "";
+			document.dispatchEvent(new CustomEvent("chapter:change", { detail: id }));
+		};
+
+		for (const node of spine.querySelectorAll<HTMLElement>("[data-spine-node]")) {
+			const section = document.getElementById(node.dataset.spineNode!);
+			if (!section) continue;
+			const trigger = ScrollTrigger.create({
+				trigger: section,
+				start: "top 55%",
+				end: "bottom 55%",
+				onToggle: announce,
+			});
+			chapters.push({ node, section, label: node.getAttribute("aria-label") ?? "", trigger, y: 0 });
+		}
+
+		// Dibuja la pista: tramos verticales y un quiebro a 45° antes de cada vía, que se
+		// alternan entre dos carriles. Las vías se colocan donde empieza su capítulo.
+		const layout = () => {
+			height = track.clientHeight;
+			const max = ScrollTrigger.maxScroll(window) || 1;
+			const lanes = [6, 18];
+			let x = lanes[0];
+			let y = 0;
+			let len = 0;
+			let d = `M ${x} 0`;
+			stops = [{ y: 0, len: 0 }];
+			chapters.forEach((c, i) => {
+				c.y = Math.min(height, Math.max(0, (c.trigger.start / max) * height));
+				const nx = lanes[(i + 1) % 2];
+				const dx = Math.abs(nx - x);
+				const bendEnd = Math.max(y, c.y - 14);
+				const bendStart = Math.max(y, bendEnd - dx);
+				d += ` L ${x} ${bendStart} L ${nx} ${bendEnd} L ${nx} ${c.y}`;
+				len += bendStart - y;
+				stops.push({ y: bendStart, len });
+				len += Math.hypot(nx - x, bendEnd - bendStart);
+				stops.push({ y: bendEnd, len });
+				len += c.y - bendEnd;
+				stops.push({ y: c.y, len });
+				x = nx;
+				y = c.y;
+				c.node.style.transform = `translate(${x}px, ${c.y}px) translate(-50%, -50%)`;
+			});
+			d += ` L ${x} ${height}`;
+			len += height - y;
+			stops.push({ y: height, len });
+			base.setAttribute("d", d);
+			fill.setAttribute("d", d);
+			// pathLength="1" normaliza la longitud: se guarda en fracción.
+			stops = stops.map((s) => ({ y: s.y, len: s.len / len }));
+			spine.classList.add("is-ready");
+			update();
+		};
+
+		const lengthAt = (y: number) => {
+			for (let i = 1; i < stops.length; i++) {
+				const a = stops[i - 1];
+				const b = stops[i];
+				if (y <= b.y) return b.y === a.y ? b.len : a.len + ((y - a.y) / (b.y - a.y)) * (b.len - a.len);
+			}
+			return 1;
+		};
+
+		let queued = false;
+		const update = () => {
+			queued = false;
+			const max = ScrollTrigger.maxScroll(window) || 1;
+			const y = (window.scrollY / max) * height;
+			fill.style.strokeDashoffset = String(1 - lengthAt(y));
+			chapters.forEach((c) => c.node.classList.toggle("is-on", y >= c.y - 0.5));
+			spine.classList.toggle("is-light", isLightAt(40, window.innerHeight / 2));
+		};
+		const queue = () => {
+			if (!queued) {
+				queued = true;
+				requestAnimationFrame(update);
+			}
+		};
+
+		ScrollTrigger.addEventListener("refresh", layout);
+		window.addEventListener("scroll", queue, { passive: true });
+		layout();
+		announce();
+	}
+</script>

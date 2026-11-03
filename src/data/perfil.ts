@@ -13,7 +13,7 @@ export const PERFIL = {
 
 /** Los capítulos de la historia, en orden. Los usan la cabecera, la espina de circuito y las etiquetas. */
 export const CAPITULOS = [
-	{ id: "manifiesto", indice: "01", nombre: "Manifiesto", enNav: false },
+	{ id: "manifiesto", indice: "01", nombre: "Manifiesto", enNav: false, nav: "Manifiesto" },
 	{ id: "sobre-mi", indice: "02", nombre: "Origen", enNav: true, nav: "Sobre mí" },
 	{ id: "experiencia", indice: "03", nombre: "Trayectoria", enNav: true, nav: "Experiencia" },
 	{ id: "proyectos", indice: "04", nombre: "Proyectos", enNav: true, nav: "Proyectos" },
