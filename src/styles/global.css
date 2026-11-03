@@ -133,6 +133,11 @@ html.lenis body {
 	padding-block: 0.1em;
 	margin-block: -0.1em;
 }
+/* Las palabras partidas son inline-block y heredarían el text-indent del párrafo: cada
+   una se desplazaría dentro de su caja y se montaría sobre la siguiente. */
+[data-scrub-words] > div {
+	text-indent: 0;
+}
 
 /* El texto del hero está oculto hasta que arranca su entrada, para que no aparezca de
    golpe antes de animarse. Un script en línea del <head> añade `motion-pending` y lo
