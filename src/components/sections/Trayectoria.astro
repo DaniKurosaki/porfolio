@@ -96,7 +96,7 @@ const total = String(EXPERIENCIA.length).padStart(2, "0");
 								<p
 									data-year
 									aria-hidden="true"
-									class="year display text-outline whitespace-nowrap leading-[0.8] text-paper/40 lg:col-span-4 group-data-[pinned]/pin:text-paper/30"
+									class="year display text-outline whitespace-nowrap leading-[0.8] text-paper/60 lg:col-span-4 group-data-[pinned]/pin:text-paper/50"
 								>
 									{p.anio}
 								</p>
@@ -205,6 +205,13 @@ const total = String(EXPERIENCIA.length).padStart(2, "0");
 	   enorme pero sin pasarse de alto en pantallas bajas. */
 	.year {
 		font-size: var(--year);
+		/* A 1 px y con poca opacidad casi no se veía en pantallas grandes. */
+		-webkit-text-stroke-width: 1.5px;
+		transition: color 0.6s;
+	}
+	/* El año del panel al que ya ha llegado la pista se enciende, como su vía. */
+	.trayectoria[data-pinned] .panel.is-on .year {
+		color: rgb(var(--volt));
 	}
 	.trayectoria[data-pinned] .year {
 		font-size: min(15vw, 24svh);
@@ -325,6 +332,7 @@ const total = String(EXPERIENCIA.length).padStart(2, "0");
 				panels.forEach((_, i) => {
 					const on = head > lefts[i] + VIA;
 					setOn(vias[i], on);
+					panels[i].classList.toggle("is-on", on);
 					if (on) reached = i;
 					const lit = lits[i];
 					if (!lit) return;
@@ -427,6 +435,7 @@ const total = String(EXPERIENCIA.length).padStart(2, "0");
 				delete root.dataset.pinned;
 				ScrollTrigger.removeEventListener("refresh", onRefresh);
 				lits.forEach((lit) => lit?.style.removeProperty("clip-path"));
+				panels.forEach((p) => p.classList.remove("is-on"));
 				if (count) count.textContent = "01";
 				resetVias();
 			};

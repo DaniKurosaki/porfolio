@@ -30,10 +30,10 @@ const anio = new Date().getFullYear();
 			</span>
 		</div>
 
-		<div>
-			<h1 data-intro class="display text-mega" aria-label={PERFIL.nombre}>
+		<div class="hero-stage">
+			<h1 data-intro class="hero-title display" aria-label={PERFIL.nombre}>
 				<span class="hero-mask"><span data-line class="block whitespace-nowrap">{t.lineas[0]}</span></span>
-				<span class="hero-mask lg:pl-[14vw]">
+				<span class="hero-mask lg:pl-[14%]">
 					<span data-line class="block whitespace-nowrap"
 						>{t.lineas[1]}<span data-hero-led class="hero-led" aria-hidden="true"></span></span
 					>
@@ -63,6 +63,24 @@ const anio = new Date().getFullYear();
 </section>
 
 <style>
+	/* El titular se mide contra su propio bloque (unidades de contenedor), no contra la
+	   ventana: el contenido no pasa de 1600 px y, con vw, en pantallas anchas la sangría de
+	   «Castillo» seguía creciendo y la palabra se salía de su máscara. «Castillo» con el led
+	   mide unas 4,1 em: con la sangría del 14 % ocupa el 92 % del bloque. El tope en svh
+	   evita que las dos líneas se coman la pantalla en monitores bajos. */
+	.hero-stage {
+		container-type: inline-size;
+	}
+	.hero-title {
+		font-size: min(22cqw, 30svh);
+		line-height: 0.82;
+	}
+	@media (min-width: 1024px) {
+		.hero-title {
+			font-size: min(19cqw, 30svh);
+		}
+	}
+
 	/* Máscara de cada línea del titular, con sitio para ascendentes y descendentes. */
 	.hero-mask {
 		display: block;
