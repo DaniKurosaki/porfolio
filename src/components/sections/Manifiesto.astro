@@ -3,7 +3,6 @@ import SectionLabel from "@/components/motion/SectionLabel.astro";
 import ScrubWords from "@/components/motion/ScrubWords.astro";
 import RevealLines from "@/components/motion/RevealLines.astro";
 import RevealImage from "@/components/motion/RevealImage.astro";
-import Parallax from "@/components/motion/Parallax.astro";
 import Roll from "@/components/motion/Roll.astro";
 import FadeUp from "@/components/motion/FadeUp.astro";
 import { CAPITULOS, PERFIL } from "@/data/perfil";
@@ -23,11 +22,10 @@ const siguiente = CAPITULOS[1];
 
 <!--
 	Capítulo 01, el manifiesto. Una frase grande cuyas palabras se encienden al ritmo del
-	scroll (ScrubWords) y, debajo, una composición desplazada: el retrato a la izquierda y
-	bajado, con dos profundidades (Parallax en el marco y RevealImage dentro), y a la derecha
-	el relato y una ficha técnica que acaba en el puesto actual, con el enlace al capítulo
-	siguiente al pie de la foto. Sin JS o con
-	movimiento reducido, la frase está sólida y todo quieto; en móvil se apila.
+	scroll (ScrubWords) y, debajo, el retrato a la izquierda (la foto se desplaza dentro de su
+	marco con RevealImage) y a la derecha, alineados arriba, el relato y una ficha técnica que
+	acaba en el puesto actual, con el enlace al capítulo siguiente al pie de la foto. Sin JS o
+	con movimiento reducido, la frase está sólida y todo quieto; en móvil se apila.
 -->
 <section
 	id="manifiesto"
@@ -45,24 +43,22 @@ const siguiente = CAPITULOS[1];
 		</ScrubWords>
 
 		<div class="mt-20 grid grid-cols-12 gap-x-5 gap-y-16 md:mt-28 lg:mt-36">
-			<!-- El retrato, bajado respecto al relato: el desfase es un margen, el movimiento lo pone Parallax. -->
-			<div class="col-span-12 sm:col-span-8 md:col-span-6 lg:col-span-4 lg:mt-24">
-				<Parallax speed={-8}>
-					<figure>
-						<RevealImage
-							src="/me.png"
-							alt={t.fotoAlt}
-							width={1104}
-							height={1472}
-							class="aspect-[3/4] w-full bg-ink-2"
-						/>
-						<figcaption class="text-label mt-4 flex items-center gap-3 text-paper/50">
-							<span>Fig. 01</span>
-							<span class="h-px w-6 bg-current opacity-40" aria-hidden="true"></span>
-							<span>{PERFIL.nombre}</span>
-						</figcaption>
-					</figure>
-				</Parallax>
+			<!-- El retrato, alineado arriba con el relato; solo la foto se mueve dentro de su marco. -->
+			<div class="col-span-12 sm:col-span-8 md:col-span-6 lg:col-span-4">
+				<figure>
+					<RevealImage
+						src="/me.png"
+						alt={t.fotoAlt}
+						width={1104}
+						height={1472}
+						class="aspect-[3/4] w-full bg-ink-2"
+					/>
+					<figcaption class="text-label mt-4 flex items-center gap-3 text-paper/50">
+						<span>Fig. 01</span>
+						<span class="h-px w-6 bg-current opacity-40" aria-hidden="true"></span>
+						<span>{PERFIL.nombre}</span>
+					</figcaption>
+				</figure>
 			</div>
 
 			<!-- El relato arriba y el enlace al siguiente capítulo al pie, a la altura del pie de foto. -->
