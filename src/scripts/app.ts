@@ -25,6 +25,8 @@ function initSmoothScroll() {
 /**
  * Un punto que sigue al ratón con mezcla por diferencia (se lee sobre tinta y sobre
  * papel). Crece sobre enlaces y botones, y sobre `[data-cursor="Texto"]` muestra el texto.
+ * Va pegado al ratón, sin suavizado: sustituye al cursor del sistema y cualquier
+ * retraso se nota.
  */
 function initCursor() {
 	const mm = gsap.matchMedia();
@@ -38,17 +40,13 @@ function initCursor() {
 		document.documentElement.classList.add("has-cursor");
 
 		gsap.set(cursor, { autoAlpha: 0 });
-		const xTo = gsap.quickTo(cursor, "x", { duration: 0.35, ease: "power3" });
-		const yTo = gsap.quickTo(cursor, "y", { duration: 0.35, ease: "power3" });
 		let visible = false;
 
 		const move = (e: PointerEvent) => {
 			if (e.pointerType !== "mouse") return;
-			xTo(e.clientX);
-			yTo(e.clientY);
+			cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
 			if (!visible) {
-				gsap.set(cursor, { x: e.clientX, y: e.clientY });
-				gsap.to(cursor, { autoAlpha: 1, duration: 0.3 });
+				gsap.to(cursor, { autoAlpha: 1, duration: 0.2 });
 				visible = true;
 			}
 		};

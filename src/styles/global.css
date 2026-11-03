@@ -232,6 +232,7 @@ html.has-cursor * {
 	z-index: 80;
 	pointer-events: none;
 	mix-blend-mode: difference;
+	will-change: transform;
 }
 .cursor-dot {
 	position: absolute;
