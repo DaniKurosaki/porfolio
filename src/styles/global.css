@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Sistema visual ─────────────────────────────────────────────────────────
+   Oscuro cinematográfico: tinta casi negra, papel (blanco roto) para el texto y para
+   los capítulos claros, y el amarillo voltio de acento, con moderación. Los colores van
+   en canales RGB para que Tailwind pueda darles opacidad (`bg-paper/10`). */
+:root {
+	--ink: 10 10 10;
+	--ink-2: 20 20 18;
+	--paper: 237 234 227;
+	--volt: 250 204 21;
+	color-scheme: dark;
+}
+
+@layer base {
+	html {
+		background: rgb(var(--ink));
+		color: rgb(var(--paper));
+		font-family: "Archivo Variable", system-ui, sans-serif;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		text-rendering: optimizeLegibility;
+	}
+
+	body {
+		min-height: 100svh;
+		overscroll-behavior: none;
+	}
+
+	::selection {
+		background: rgb(var(--volt));
+		color: rgb(var(--ink));
+	}
+
+	:focus-visible {
+		outline: 1px solid rgb(var(--volt));
+		outline-offset: 4px;
+	}
+}
+
+/* ── Maquetación y escala tipográfica ───────────────────────────────────────
+   La rejilla editorial vive en `shell` (ancha, con margen lateral generoso, y 12
+   columnas cuando se necesitan). Los titulares son Archivo estrecha y en mayúsculas
+   (`display`); la palabra de acento de cada titular va en Instrument Serif cursiva
+   (`<em class="accent">`). Tamaños: `text-mega` solo en el hero, `text-huge` para el
+   h2 de cada capítulo, `text-big` para titulares de ítem y frases, `text-label` y
+   `text-mono` para etiquetas. */
+@layer components {
+	.shell {
+		margin-inline: auto;
+		width: 100%;
+		max-width: 1600px;
+		padding-inline: 1.25rem;
+	}
+	@media (min-width: 768px) {
+		.shell {
+			padding-inline: 2.5rem;
+		}
+	}
+	@media (min-width: 1024px) {
+		/* Deja sitio a la espina de circuito fija del lateral izquierdo. */
+		.shell {
+			padding-inline: 5rem 2.5rem;
+		}
+	}
+
+	.display {
+		font-family: "Archivo Variable", system-ui, sans-serif;
+		font-weight: 800;
+		font-stretch: 72%;
+		text-transform: uppercase;
+		letter-spacing: -0.01em;
+	}
+
+	.accent {
+		font-family: "Instrument Serif", Georgia, serif;
+		font-style: italic;
+		font-weight: 400;
+		font-stretch: 100%;
+		text-transform: none;
+		letter-spacing: -0.01em;
+		color: rgb(var(--volt));
+	}
+	/* En los capítulos claros el acento se lee mejor en tinta. */
+	.on-paper .accent {
+		color: rgb(var(--ink));
+	}
+}
+
+@layer utilities {
+	.text-mega {
+		font-size: clamp(4.5rem, 19vw, 22rem);
+		line-height: 0.82;
+	}
+	.text-huge {
+		font-size: clamp(3rem, 9vw, 10rem);
+		line-height: 0.88;
+	}
+	.text-big {
+		font-size: clamp(2rem, 4.6vw, 5rem);
+		line-height: 0.95;
+	}
+	.text-label {
+		font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+		font-size: 0.6875rem;
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+	.text-outline {
+		color: transparent;
+		-webkit-text-stroke: 1px currentColor;
+	}
+}
+
+/* ── Scroll suave de Lenis (como lenis/dist/lenis.css) ─────────────────────── */
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+	overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+	pointer-events: none;
+}
+
+/* Las máscaras de línea de SplitText recortan su línea; los titulares van con un
+   interlineado menor que 1, así que se da a la máscara sitio para ascendentes y
+   descendentes sin mover la maquetación. */
+.split-line-mask {
+	padding-block: 0.1em;
+	margin-block: -0.1em;
+}
+
+/* El texto del hero está oculto hasta que arranca su entrada, para que no aparezca de
+   golpe antes de animarse. Un script en línea del <head> añade `motion-pending` y lo
+   quita a los 3 s pase lo que pase; el hero lo quita en cuanto GSAP fija su estado
+   inicial. Nunca se aplica a nada que sea el LCP de una imagen. */
+.motion-pending [data-intro] {
+	visibility: hidden;
+}
+
+/* ── Enlace que rueda (componente Roll) ─────────────────────────────────────── */
+.roll {
+	position: relative;
+	display: inline-flex;
+	overflow: hidden;
+	vertical-align: top;
+	padding-block: 0.1em;
+}
+.roll > span {
+	display: block;
+	transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.roll-b {
+	position: absolute;
+	top: 0.1em;
+	left: 0;
+	transform: translateY(115%);
+}
+:is(a, button, .group):is(:hover, :focus-visible) .roll-a {
+	transform: translateY(-115%);
+}
+:is(a, button, .group):is(:hover, :focus-visible) .roll-b {
+	transform: translateY(0);
+}
+
+/* ── El led: el punto amarillo que marca lo que está «encendido» ──────────── */
+.led {
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 9999px;
+	background: rgb(var(--volt));
+	box-shadow:
+		0 0 0.5rem rgb(var(--volt) / 0.8),
+		0 0 1.5rem rgb(var(--volt) / 0.4);
+}
+.led-pulse {
+	animation: led-pulse 2.4s ease-in-out infinite;
+}
+@keyframes led-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.35;
+	}
+}
+
+/* ── Grano de película sobre toda la página ─────────────────────────────────── */
+.grain-page::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: 70;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+	opacity: 0.06;
+}
+
+/* ── Señal de scroll del hero: una línea corta que baja por su carril ──────── */
+.scroll-cue {
+	animation: scroll-cue 2.2s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+}
+@keyframes scroll-cue {
+	from {
+		transform: translateY(-100%);
+	}
+	to {
+		transform: translateY(200%);
+	}
+}
+
+/* ── Cursor propio (solo con ratón y movimiento permitido; lo activa app.ts) ─ */
+html.has-cursor,
+html.has-cursor * {
+	cursor: none !important;
+}
+.cursor {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 80;
+	pointer-events: none;
+	mix-blend-mode: difference;
+}
+.cursor-dot {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 9999px;
+	background: rgb(var(--paper));
+	transform: translate(-50%, -50%) scale(1);
+	transition:
+		transform 0.5s cubic-bezier(0.19, 1, 0.22, 1),
+		background-color 0.3s;
+}
+.cursor.is-link .cursor-dot {
+	transform: translate(-50%, -50%) scale(4.4);
+}
+.cursor.is-label {
+	mix-blend-mode: normal;
+}
+.cursor.is-label .cursor-dot {
+	transform: translate(-50%, -50%) scale(9);
+	background: rgb(var(--volt));
+}
+.cursor-label {
+	position: absolute;
+	left: 0;
+	top: 0;
+	transform: translate(-50%, -50%);
+	font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: rgb(var(--ink));
+	opacity: 0;
+	transition: opacity 0.3s;
+}
+.cursor.is-label .cursor-label {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.roll > span {
+		transition: none;
+	}
+	.scroll-cue,
+	.led-pulse {
+		animation: none;
+	}
+}

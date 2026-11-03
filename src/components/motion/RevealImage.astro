@@ -1,0 +1,33 @@
+---
+/**
+ * Una imagen que un clip-path descubre de abajo arriba al entrar y que luego se desplaza
+ * un poco a contracorriente del scroll dentro de su marco. `class` es el marco (tamaño y
+ * proporción); esquinas rectas y sin sombra.
+ */
+interface Props {
+	src: string;
+	alt: string;
+	width: number;
+	height: number;
+	class?: string;
+	imgClass?: string;
+	/** Recorrido del parallax en % de la altura de la imagen; 0 lo quita. Máx. ~12. */
+	parallax?: number;
+	/** En la primera pantalla: carga inmediata. */
+	priority?: boolean;
+}
+
+const { src, alt, width, height, class: className, imgClass, parallax, priority = false } = Astro.props;
+---
+
+<div class:list={["relative overflow-hidden", className]} data-reveal-image data-image-parallax={parallax}>
+	<img
+		src={src}
+		alt={alt}
+		width={width}
+		height={height}
+		loading={priority ? "eager" : "lazy"}
+		decoding="async"
+		class:list={["h-full w-full object-cover", imgClass]}
+	/>
+</div>

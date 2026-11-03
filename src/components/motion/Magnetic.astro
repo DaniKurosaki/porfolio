@@ -1,0 +1,11 @@
+---
+/** Atrae su contenido hacia el puntero y vuelve con rebote al salir. Envuelve un solo botón o enlace. */
+interface Props {
+	strength?: number;
+	class?: string;
+}
+
+const { strength, class: className } = Astro.props;
+---
+
+<div class:list={["inline-block", className]} data-magnetic data-strength={strength}><slot /></div>

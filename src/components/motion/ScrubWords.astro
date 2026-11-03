@@ -1,0 +1,16 @@
+---
+import type { HTMLTag } from "astro/types";
+
+/** Una gran frase cuyas palabras pasan de tenues a sólidas con el scroll. Una por capítulo. */
+interface Props {
+	as?: HTMLTag;
+	class?: string;
+	start?: string;
+	end?: string;
+	[key: string]: unknown;
+}
+
+const { as: Tag = "p", class: className, start, end, ...rest } = Astro.props;
+---
+
+<Tag class={className} data-scrub-words data-start={start} data-end={end} {...rest}><slot /></Tag>

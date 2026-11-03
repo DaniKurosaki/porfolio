@@ -1,0 +1,11 @@
+---
+/** Mueve su contenido en vertical a otra velocidad que el scroll (`speed` en % de su altura). */
+interface Props {
+	speed?: number;
+	class?: string;
+}
+
+const { speed, class: className } = Astro.props;
+---
+
+<div class={className} data-parallax data-speed={speed}><slot /></div>

@@ -1,0 +1,17 @@
+---
+import type { HTMLTag } from "astro/types";
+
+/** Sus hijos directos aparecen subiendo uno tras otro al entrar: párrafos, botones, cifras, filas. */
+interface Props {
+	as?: HTMLTag;
+	class?: string;
+	delay?: number;
+	stagger?: number;
+	start?: string;
+	[key: string]: unknown;
+}
+
+const { as: Tag = "div", class: className, delay, stagger, start, ...rest } = Astro.props;
+---
+
+<Tag class={className} data-fade-up data-delay={delay} data-stagger={stagger} data-start={start} {...rest}><slot /></Tag>

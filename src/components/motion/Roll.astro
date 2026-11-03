@@ -1,0 +1,13 @@
+---
+/**
+ * Una etiqueta que rueda hasta una copia de sí misma al pasar el ratón por su enlace o
+ * botón (solo CSS, ver `.roll` en global.css). Va dentro del <a>/<button>.
+ */
+interface Props {
+	text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<span class="roll"><span class="roll-a">{text}</span><span class="roll-b" aria-hidden="true">{text}</span></span>

@@ -1,0 +1,17 @@
+---
+import type { HTMLTag } from "astro/types";
+
+/** Texto que sube línea a línea desde detrás de una máscara al entrar (ver primitives.ts). */
+interface Props {
+	as?: HTMLTag;
+	class?: string;
+	delay?: number;
+	stagger?: number;
+	start?: string;
+	[key: string]: unknown;
+}
+
+const { as: Tag = "div", class: className, delay, stagger, start, ...rest } = Astro.props;
+---
+
+<Tag class={className} data-reveal-lines data-delay={delay} data-stagger={stagger} data-start={start} {...rest}><slot /></Tag>

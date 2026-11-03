@@ -1,48 +1,23 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { TEXTOS } from "@/data/textos";
 
-import AboutMe from "@/components/AboutMe.astro";
-import Briefcase from "@/components/icons/Briefcase.astro";
-import CodeIcon from "@/components/icons/Code.astro";
-import Experience from "@/components/Experience.astro";
-import ProfileCheck from "@/components/icons/ProfileCheck.astro";
-import Projects from "@/components/Projects.astro";
-import SectionContainer from "@/components/SectionContainer.astro";
-import Hero from "@/components/Hero.astro";
+import Hero from "@/components/sections/Hero.astro";
+import Manifiesto from "@/components/sections/Manifiesto.astro";
+import Origen from "@/components/sections/Origen.astro";
+import Trayectoria from "@/components/sections/Trayectoria.astro";
+import Stack from "@/components/sections/Stack.astro";
+import Proyectos from "@/components/sections/Proyectos.astro";
+import Contacto from "@/components/sections/Contacto.astro";
 ---
 
-<Layout
-	title="Porfolio de Daniel Castillo Tamayo - Desarrollador y Programador Web con más de 4 años de experiencia"
-	description="Mi nombre es Daniel Castillo Tamayo, desarrollador Web especializado en crear experiencias de usuario únicas y atractivas."
->
-	<main class="px-4">
-		<SectionContainer class="py-16 md:py-36">
-			<Hero />
-		</SectionContainer>
-	</main>
-	<div class="px-4 space-y-24">
-		<SectionContainer id="experiencia">
-			<h2 class="flex items-center mb-6 text-3xl font-semibold gap-x-3 text-black/80 dark:text-white">
-				<Briefcase class="size-8" />
-				Experiencia laboral
-			</h2>
-			<Experience />
-		</SectionContainer>
-
-		<SectionContainer id="proyectos">
-			<h2 class="flex items-center mb-6 text-3xl font-semibold gap-x-3 text-black/80 dark:text-white">
-				<CodeIcon class="size-7" />
-				Proyectos
-			</h2>
-			<Projects />
-		</SectionContainer>
-
-		<SectionContainer id="sobre-mi">
-			<h2 class="flex items-center mb-6 text-3xl font-semibold gap-x-8 text-black/80 dark:text-white">
-				<ProfileCheck class="size-8" />
-				Sobre mí
-			</h2>
-			<AboutMe />
-		</SectionContainer>
-	</div>
+<!-- Una historia en cinco capítulos: del circuito al código. -->
+<Layout title={TEXTOS.meta.titulo} description={TEXTOS.meta.descripcion}>
+	<Hero />
+	<Manifiesto />
+	<Origen />
+	<Trayectoria />
+	<Stack />
+	<Proyectos />
+	<Contacto />
 </Layout>
