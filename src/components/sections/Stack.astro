@@ -1,7 +1,118 @@
 ---
-// Provisional: lo sustituye la sección definitiva.
+import { TEXTOS } from "@/data/textos";
+
+const t = TEXTOS.stack;
+const total = String(t.items.length).padStart(2, "0");
+
+// Dos filas en sentidos contrarios: la primera maciza y en orden; la segunda en contorno y
+// al revés, para que las palabras no coincidan una encima de otra.
+const filas = [
+	{ items: [...t.items], contorno: false },
+	{ items: [...t.items].reverse(), contorno: true },
+];
+// Cada copia es más ancha que la pantalla (≈ 40 em de texto): con dos basta para el bucle.
+const COPIAS = 2;
 ---
 
-<section id="stack"  class="bg-volt text-ink flex min-h-[60svh] items-center">
-	<div class="shell text-label">Stack (provisional)</div>
+<!--
+	La cinta del stack: el único bloque grande de amarillo. Dos filas de tecnologías que
+	corren en sentidos contrarios, aceleran con la velocidad del scroll, se inclinan con ella
+	y cambian de sentido si se sube. Lo que se lee es la lista oculta; las filas son decorado.
+-->
+<section id="stack" aria-labelledby="stack-titulo" class="stack relative overflow-x-clip bg-volt py-20 text-ink lg:py-28">
+	<div class="shell">
+		<div class="text-label flex items-center gap-4" data-section-label>
+			<span aria-hidden="true" class="size-[7px] shrink-0 bg-current"></span>
+			<h2 id="stack-titulo">{t.etiqueta}</h2>
+			<span aria-hidden="true" data-rule class="h-px flex-1 origin-left bg-current opacity-30"></span>
+			<span aria-hidden="true" class="tabular-nums">({total})</span>
+		</div>
+	</div>
+
+	<ul class="sr-only">
+		{t.items.map((item) => <li>{item}</li>)}
+	</ul>
+
+	<div aria-hidden="true" class="mt-12 lg:mt-16">
+		{
+			filas.map((fila, f) => (
+				<div class:list={["py-3 lg:py-5", f > 0 && "border-t border-ink/15"]}>
+					<div data-row class="flex w-max will-change-transform">
+						{Array.from({ length: COPIAS }, () => (
+							<div class="display text-huge flex shrink-0 items-center">
+								{fila.items.map((item) => (
+									<span class="flex items-center">
+										<span class:list={["whitespace-nowrap", fila.contorno && "text-outline"]}>{item}</span>
+										{/* Separador: una vía, un tramo de pista con quiebro a 45° y un pad. */}
+										<svg
+											class="mx-[0.3em] h-[0.3em] w-auto shrink-0"
+											viewBox="0 0 64 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="1.5"
+										>
+											<circle cx="6" cy="18" r="4" vector-effect="non-scaling-stroke" />
+											<path d="M10 18 H28 L40 6 H52" vector-effect="non-scaling-stroke" />
+											<rect x="52" y="2" width="8" height="8" fill="currentColor" stroke="none" />
+										</svg>
+									</span>
+								))}
+							</div>
+						))}
+					</div>
+				</div>
+			))
+		}
+	</div>
 </section>
+
+<script>
+	import { MQ, ScrollTrigger, gsap } from "@/scripts/motion";
+
+	const root = document.querySelector<HTMLElement>("#stack");
+	if (root) {
+		const rows = Array.from(root.querySelectorAll<HTMLElement>("[data-row]"));
+		const mm = gsap.matchMedia();
+
+		mm.add(MQ.motion, () => {
+			const cintas = rows.map((row, i) => {
+				// Bucle sin costura: con dos copias, al llegar a −50 % la segunda está donde empezó la primera.
+				const loop = gsap.to(row, { xPercent: -50, duration: 48, ease: "none", repeat: -1, paused: true });
+				loop.totalTime(loop.duration() * 1000); // lejos de cero: puede ir hacia atrás sin fin
+				const sentido = i % 2 === 0 ? 1 : -1; // las filas impares corren al revés
+				loop.timeScale(sentido);
+				const skew = gsap.quickTo(row, "skewX", { duration: 0.6, ease: "power3.out" });
+				return { loop, sentido, skew };
+			});
+			const enderezar = () => cintas.forEach((c) => c.skew(0));
+
+			ScrollTrigger.create({
+				trigger: root,
+				start: "top bottom",
+				end: "bottom top",
+				// Fuera de la pantalla, las cintas se paran.
+				onToggle: (self) => cintas.forEach((c) => c.loop.paused(!self.isActive)),
+				onUpdate: (self) => {
+					const dir = self.direction;
+					const v = self.getVelocity();
+					const boost = 1 + Math.min(Math.abs(v) / 250, 8);
+					const lean = gsap.utils.clamp(-8, 8, v / -250);
+					for (const c of cintas) {
+						gsap.to(c.loop, {
+							timeScale: dir * c.sentido * boost,
+							duration: 0.25,
+							overwrite: true,
+							// Vuelve a la velocidad normal, pero en el último sentido del scroll.
+							onComplete: () => {
+								gsap.to(c.loop, { timeScale: dir * c.sentido, duration: 1.4, ease: "power2.out" });
+							},
+						});
+						c.skew(lean * c.sentido);
+					}
+				},
+				onLeave: enderezar,
+				onLeaveBack: enderezar,
+			});
+		});
+	}
+</script>

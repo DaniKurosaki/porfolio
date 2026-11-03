@@ -16,6 +16,13 @@ export default {
 				serif: ['"Instrument Serif"', "Georgia", "serif"],
 				mono: ['"JetBrains Mono Variable"', "ui-monospace", "monospace"],
 			},
+			// La escala de titulares: `text-mega` solo en el hero, `text-huge` para el h2 de cada
+			// capítulo y `text-big` para titulares de ítem, cifras y frases.
+			fontSize: {
+				mega: ["clamp(4.5rem, 17.5vw, 20rem)", { lineHeight: "0.82" }],
+				huge: ["clamp(3rem, 9vw, 10rem)", { lineHeight: "0.88" }],
+				big: ["clamp(2rem, 4.6vw, 5rem)", { lineHeight: "0.95" }],
+			},
 			screens: {
 				xs: "480px",
 			},

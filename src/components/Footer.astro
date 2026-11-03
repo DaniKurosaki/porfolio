@@ -1,8 +1,112 @@
 ---
-// Provisional: lo sustituye el pie definitivo.
-import { PERFIL } from "@/data/perfil";
+import Roll from "@/components/motion/Roll.astro";
+import { CAPITULOS, PERFIL } from "@/data/perfil";
 import { TEXTOS } from "@/data/textos";
+
+type Capitulo = (typeof CAPITULOS)[number];
+const enlaces = CAPITULOS.filter((c): c is Extract<Capitulo, { enNav: true }> => c.enNav);
 const anio = new Date().getFullYear();
 ---
 
-<footer class="shell py-10 text-label opacity-70">© {anio} {PERFIL.nombre}. {TEXTOS.pie.derechos}</footer>
+<!--
+	El pie, en tinta: la marca a todo el ancho, cuyas letras suben una a una al entrar, y
+	debajo los créditos, los capítulos, LinkedIn y «volver arriba».
+
+	Tamaño de la marca: «DANIEL CASTILLO» en Archivo 800 al 72 % mide 6,93 em sin kerning
+	(SplitText parte en letras y el kerning se pierde), así que 100 / 6,93 ≈ 14,4cqw llenaría
+	justo la columna; 14cqw la deja al 97 %. En cqw, no en vw: vw no sabe nada de los márgenes
+	de `shell` ni de su máximo de 1600 px, y desbordaría en unos anchos y se quedaría corto en
+	otros. El `container-type` va en el padre, porque un elemento no puede medirse a sí mismo.
+-->
+<footer class="relative overflow-x-clip bg-ink pb-8 pt-24 text-paper lg:pt-32">
+	<div class="shell">
+		<p class="flex items-center gap-3 text-label text-paper/60">
+			<span class="led led-pulse" aria-hidden="true"></span>
+			{TEXTOS.hero.lema}
+		</p>
+
+		<div class="mt-10 [container-type:inline-size] lg:mt-14">
+			<!-- `overflow-clip` hace de máscara de las letras; `pt-[0.16em]` libra las mayúsculas con leading 0.8. -->
+			<div
+				data-wordmark
+				aria-hidden="true"
+				class="display overflow-clip whitespace-nowrap pt-[0.16em] text-[length:14cqw] leading-[0.8]"
+			>{PERFIL.nombreCorto}</div>
+		</div>
+
+		<div
+			class="mt-12 flex flex-col gap-8 border-t border-paper/15 pt-8 text-label text-paper/60 lg:mt-16 lg:flex-row lg:items-start lg:justify-between lg:gap-12"
+		>
+			<!-- La atribución del fork, tal cual. -->
+			<p class="creditos max-w-[56ch]">© {anio} {PERFIL.nombre}. {TEXTOS.pie.derechos}</p>
+
+			<ul class="flex flex-wrap gap-x-6 gap-y-4">
+				{
+					enlaces.map((c) => (
+						<li>
+							<a href={`#${c.id}`} class="transition-colors duration-500 hover:text-paper">
+								<Roll text={c.nav} />
+							</a>
+						</li>
+					))
+				}
+				<li>
+					<a
+						href={PERFIL.linkedin}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center gap-2 transition-colors duration-500 hover:text-paper"
+					>
+						<Roll text={TEXTOS.contacto.linkedin} />
+						<span aria-hidden="true">↗</span>
+					</a>
+				</li>
+			</ul>
+
+			<button
+				type="button"
+				data-scroll-top
+				class="inline-flex shrink-0 items-center gap-2 self-start text-paper transition-colors duration-500 hover:text-volt"
+			>
+				<Roll text={TEXTOS.pie.arriba} />
+				<span aria-hidden="true">↑</span>
+			</button>
+		</div>
+	</div>
+</footer>
+
+<style>
+	/* `text-label` va con interlineado 1; los créditos saltan de línea en móvil. */
+	.creditos {
+		line-height: 1.7;
+	}
+</style>
+
+<script>
+	import { EASE, MQ, SplitText, gsap, scrollToTop } from "@/scripts/motion";
+
+	// Volver arriba con Lenis, si está activo (un scrollTo nativo se pelearía con él).
+	document.querySelector<HTMLButtonElement>("[data-scroll-top]")?.addEventListener("click", () => scrollToTop());
+
+	const mark = document.querySelector<HTMLElement>("[data-wordmark]");
+	if (mark) {
+		const mm = gsap.matchMedia();
+		mm.add(MQ.motion, () => {
+			// Con autoSplit, la animación se crea en onSplit y se devuelve: SplitText la rehace
+			// si vuelve a partir al cargar la fuente o al cambiar el ancho.
+			const split = SplitText.create(mark, {
+				type: "chars",
+				autoSplit: true,
+				onSplit: (self) =>
+					gsap.from(self.chars, {
+						yPercent: 130,
+						duration: 1.4,
+						ease: EASE,
+						stagger: 0.035,
+						scrollTrigger: { trigger: mark, start: "top 95%", once: true },
+					}),
+			});
+			return () => split.revert();
+		});
+	}
+</script>

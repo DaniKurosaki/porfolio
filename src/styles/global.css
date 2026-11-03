@@ -89,19 +89,10 @@
 	}
 }
 
-@layer utilities {
-	.text-mega {
-		font-size: clamp(4.5rem, 17.5vw, 20rem);
-		line-height: 0.82;
-	}
-	.text-huge {
-		font-size: clamp(3rem, 9vw, 10rem);
-		line-height: 0.88;
-	}
-	.text-big {
-		font-size: clamp(2rem, 4.6vw, 5rem);
-		line-height: 0.95;
-	}
+/* `text-mega`, `text-huge` y `text-big` son tamaños de `fontSize` en tailwind.config.mjs,
+   para que `leading-*` y `text-[…]` puedan sobrescribirlos. `text-label` es un componente
+   por lo mismo: cualquier utilidad le gana. */
+@layer components {
 	.text-label {
 		font-family: "JetBrains Mono Variable", ui-monospace, monospace;
 		font-size: 0.6875rem;
@@ -110,8 +101,12 @@
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
+}
+
+@layer utilities {
+	/* Solo el contorno, del color del texto: se vacía el relleno, no `color`. */
 	.text-outline {
-		color: transparent;
+		-webkit-text-fill-color: transparent;
 		-webkit-text-stroke: 1px currentColor;
 	}
 }

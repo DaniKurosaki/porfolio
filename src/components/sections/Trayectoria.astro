@@ -1,7 +1,476 @@
 ---
-// Provisional: lo sustituye la sección definitiva.
+import SectionLabel from "@/components/motion/SectionLabel.astro";
+import RevealLines from "@/components/motion/RevealLines.astro";
+import FadeUp from "@/components/motion/FadeUp.astro";
+import { EXPERIENCIA } from "@/data/experiencia";
+import { TEXTOS } from "@/data/textos";
+
+const t = TEXTOS.trayectoria;
+const ultimo = EXPERIENCIA.length - 1;
+const total = String(EXPERIENCIA.length).padStart(2, "0");
 ---
 
-<section id="experiencia" data-chapter="03" class="bg-ink flex min-h-[60svh] items-center">
-	<div class="shell text-label">Trayectoria (provisional)</div>
+<!--
+	Capítulo 03, la trayectoria. En escritorio, un escenario fijado con una pista horizontal:
+	un panel por puesto, con el año enorme en contorno a contrapié y un hilo de circuito que
+	se dibuja hasta la «zona activa» y enciende la vía de cada panel al llegar a ella. Sin
+	JS, con movimiento reducido o por debajo de 1024 px, una línea de tiempo vertical: la
+	pista a la izquierda, con sus vías, y los puestos apilados. Funciona con cualquier
+	número de puestos.
+-->
+<section
+	id="experiencia"
+	data-chapter="03"
+	class="trayectoria group/pin relative overflow-x-clip bg-ink pb-32 pt-32 text-paper lg:pb-44 lg:pt-44 data-[pinned]:pb-0"
+>
+	<div class="shell">
+		<SectionLabel index="03" text="Trayectoria" />
+		<div class="mt-14 grid grid-cols-12 gap-x-5 gap-y-10 lg:mt-20">
+			<RevealLines as="h2" class="display text-huge col-span-12">
+				{t.titulo.antes}{" "}<em class="accent">{t.titulo.acento}</em>
+			</RevealLines>
+			<FadeUp class="col-span-12 flex items-start gap-5 sm:col-span-8 lg:col-span-4 lg:col-start-9" delay={0.15}>
+				<span aria-hidden="true" class="mt-1 block shrink-0 text-volt">
+					<!-- Abajo cuando la línea de tiempo se apila; a la derecha cuando la pista es horizontal. -->
+					<svg
+						class="h-5 w-5 transition-transform duration-700 group-data-[pinned]/pin:-rotate-90"
+						viewBox="0 0 20 20"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1"
+					>
+						<path d="M10 1 V18 M4 12 L10 18 L16 12" vector-effect="non-scaling-stroke"></path>
+					</svg>
+				</span>
+				<p class="max-w-[32ch] text-base leading-relaxed text-paper/60 md:text-lg">{t.intro}</p>
+			</FadeUp>
+		</div>
+	</div>
+
+	<!-- El escenario que se fija en escritorio (data-pinned): la pista y, al pie, el contador y el progreso. -->
+	<div
+		data-stage
+		class="relative mt-20 lg:mt-28 group-data-[pinned]/pin:mt-6 group-data-[pinned]/pin:flex group-data-[pinned]/pin:h-[100svh] group-data-[pinned]/pin:flex-col group-data-[pinned]/pin:overflow-clip group-data-[pinned]/pin:pt-[max(5.5rem,12svh)]"
+	>
+		<div
+			class="viewport shell group-data-[pinned]/pin:flex group-data-[pinned]/pin:min-h-0 group-data-[pinned]/pin:max-w-none group-data-[pinned]/pin:flex-1 group-data-[pinned]/pin:items-center group-data-[pinned]/pin:px-0"
+		>
+			<ol
+				data-track
+				class="track relative group-data-[pinned]/pin:flex group-data-[pinned]/pin:w-max group-data-[pinned]/pin:shrink-0 group-data-[pinned]/pin:items-start group-data-[pinned]/pin:will-change-transform"
+			>
+				{
+					EXPERIENCIA.map((p, i) => {
+						// Nivel de la pista en el panel: 0 arriba, 1 abajo. Entre panel y panel, un quiebro a 45°.
+						const nivel = i % 2;
+						const esUltimo = i === ultimo;
+						const actual = p.actual ? "" : undefined;
+						return (
+							<li
+								data-panel
+								class="panel relative pb-24 pl-10 last:pb-0 md:pl-16 lg:grid lg:grid-cols-12 lg:gap-x-5 group-data-[pinned]/pin:flex group-data-[pinned]/pin:shrink-0 group-data-[pinned]/pin:flex-col group-data-[pinned]/pin:pb-0 group-data-[pinned]/pin:pl-0"
+							>
+								{/* Línea de tiempo vertical: un tramo de pista hasta la vía del siguiente puesto. */}
+								{esUltimo ? (
+									<span
+										aria-hidden="true"
+										class="vrail absolute left-[3px] h-24 border-l border-dashed border-paper/25 group-data-[pinned]/pin:hidden"
+									/>
+								) : (
+									<span
+										aria-hidden="true"
+										class="vrail absolute left-[3px] h-full w-px bg-paper/15 group-data-[pinned]/pin:hidden"
+									>
+										<span data-vlit class="invisible absolute inset-0 origin-top bg-volt" />
+									</span>
+								)}
+								<span
+									aria-hidden="true"
+									data-via
+									data-vvia
+									data-actual={actual}
+									data-on={actual}
+									class="via vvia absolute left-0 group-data-[pinned]/pin:hidden"
+								/>
+
+								<p
+									data-year
+									aria-hidden="true"
+									class="year display text-outline whitespace-nowrap leading-[0.8] text-paper/40 lg:col-span-4 group-data-[pinned]/pin:text-paper/30"
+								>
+									{p.anio}
+								</p>
+
+								{/* Pista horizontal (solo con data-pinned): la base tenue y, encima, la encendida, que el script destapa. */}
+								<div aria-hidden="true" class="relative my-[3.5svh] hidden h-4 group-data-[pinned]/pin:block">
+									{esUltimo ? (
+										<span
+											class:list={[
+												"absolute left-[3.5px] w-40 border-t border-dashed border-paper/25",
+												nivel ? "bottom-0" : "top-0",
+											]}
+										/>
+									) : (
+										["base", "encendida"].map((capa) => (
+											<span
+												data-lit={capa === "encendida" ? "" : undefined}
+												class:list={["absolute inset-0", capa === "encendida" ? "text-volt" : "text-paper/15"]}
+											>
+												<span
+													class:list={[
+														"absolute left-[3.5px] right-[calc(3rem+16px)] h-px bg-current",
+														nivel ? "bottom-0" : "top-0",
+													]}
+												/>
+												<svg
+													class="absolute right-12 top-0 h-4 w-4 overflow-visible"
+													viewBox="0 0 16 16"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="1"
+												>
+													<path
+														d={nivel ? "M0 15.5 L15 0.5 H16" : "M0 0.5 L15 15.5 H16"}
+														vector-effect="non-scaling-stroke"
+													/>
+												</svg>
+												<span
+													class:list={["absolute right-0 h-px w-12 bg-current", nivel ? "top-0" : "bottom-0"]}
+												/>
+											</span>
+										))
+									)}
+									<span
+										data-via
+										data-hvia
+										data-actual={actual}
+										class:list={["via absolute left-0", nivel ? "top-[12px]" : "-top-[3px]"]}
+									/>
+								</div>
+
+								<div class="mt-6 lg:col-span-7 lg:col-start-5 lg:mt-0 group-data-[pinned]/pin:mt-0 group-data-[pinned]/pin:pr-[6vw]">
+									<p data-item class="text-label text-paper/50">
+										{p.fechas}
+									</p>
+									<h3 data-item class="display text-big mt-5">
+										{p.puesto}
+									</h3>
+									<p data-item class="mt-4 font-serif text-2xl italic text-paper/80 md:text-3xl">
+										{p.link ? (
+											<a href={p.link} target="_blank" rel="noopener noreferrer" class="underline decoration-paper/30 underline-offset-4 transition-colors hover:text-volt">
+												{p.empresa}
+											</a>
+										) : (
+											p.empresa
+										)}
+									</p>
+									<p data-item class="mt-6 max-w-[42ch] text-lg text-paper/70 md:text-xl group-data-[pinned]/pin:text-lg">
+										{p.descripcion}
+									</p>
+									{p.actual && (
+										<p data-item class="text-label mt-8 flex items-center gap-3 text-volt">
+											<span class="led led-pulse" aria-hidden="true" />
+											{t.actual}
+										</p>
+									)}
+								</div>
+							</li>
+						);
+					})
+				}
+			</ol>
+		</div>
+
+		<!-- Contador y progreso: solo con la pista horizontal. -->
+		<div
+			aria-hidden="true"
+			class="shell text-label hidden shrink-0 items-center gap-6 pb-[max(1.5rem,4svh)] pt-6 text-paper/50 group-data-[pinned]/pin:flex"
+		>
+			<span class="tabular-nums"><span data-count class="text-paper">01</span> / {total}</span>
+			<span class="relative h-px flex-1 bg-paper/15">
+				<span data-progress class="absolute inset-0 origin-left bg-volt"></span>
+			</span>
+		</div>
+	</div>
 </section>
+
+<style>
+	.trayectoria {
+		/* Ancho de cada panel de la pista horizontal y tamaño del año en la línea vertical. */
+		--panel-w: clamp(34rem, 62vw, 68rem);
+		--year: clamp(4.5rem, 22vw, 9rem);
+	}
+
+	/* El año en contorno: en la línea vertical, a la medida de la columna; en la pista,
+	   enorme pero sin pasarse de alto en pantallas bajas. */
+	.year {
+		font-size: var(--year);
+	}
+	.trayectoria[data-pinned] .year {
+		font-size: min(15vw, 24svh);
+		will-change: transform;
+	}
+
+	/* La línea vertical: vía y tramo a la altura media del año. */
+	.vvia {
+		top: calc(var(--year) * 0.4 - 3.5px);
+	}
+	.vrail {
+		top: calc(var(--year) * 0.4);
+	}
+
+	/* La pista horizontal: empieza alineada con la rejilla y deja al final sitio para que
+	   el último panel cruce la zona activa (el 40 % del ancho) antes de soltar el pin. */
+	.trayectoria[data-pinned] .track {
+		padding-left: calc(max(0px, (100% - 1600px) / 2) + 5rem);
+		padding-right: max(10%, calc(60% - var(--panel-w) + 6rem));
+	}
+	.trayectoria[data-pinned] .panel {
+		width: var(--panel-w);
+	}
+	/* Los paneles se funden al pasar bajo la espina de circuito del lateral. */
+	.trayectoria[data-pinned] .viewport {
+		-webkit-mask-image: linear-gradient(90deg, transparent, #000 4.5rem);
+		mask-image: linear-gradient(90deg, transparent, #000 4.5rem);
+	}
+
+	/* La vía: un círculo hueco de 7 px que se enciende en amarillo; la actual, además, late. */
+	.via {
+		width: 7px;
+		height: 7px;
+		border-radius: 9999px;
+		border: 1px solid rgb(var(--paper) / 0.4);
+		background: rgb(var(--ink));
+		transition:
+			background-color 0.5s,
+			border-color 0.5s,
+			box-shadow 0.5s;
+	}
+	.via[data-on] {
+		border-color: rgb(var(--volt));
+		background: rgb(var(--volt));
+		box-shadow:
+			0 0 0.5rem rgb(var(--volt) / 0.8),
+			0 0 1.5rem rgb(var(--volt) / 0.4);
+	}
+	.via[data-on][data-actual] {
+		animation: led-pulse 2.4s ease-in-out infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.via {
+			transition: none;
+		}
+		.via[data-on][data-actual] {
+			animation: none;
+		}
+	}
+</style>
+
+<script>
+	import { EASE, MQ, ScrollTrigger, gsap } from "@/scripts/motion";
+
+	/** La zona activa: la pista se dibuja hasta el 40 % del ancho y cada vía se enciende al cruzarlo. */
+	const ACTIVE = 0.4;
+	/** Centro de la vía respecto al borde izquierdo de su panel (7 px de diámetro). */
+	const VIA = 3.5;
+
+	const root = document.querySelector<HTMLElement>("#experiencia");
+	const stage = root?.querySelector<HTMLElement>("[data-stage]");
+	const track = root?.querySelector<HTMLElement>("[data-track]");
+
+	const panels = track ? Array.from(track.querySelectorAll<HTMLElement>("[data-panel]")) : [];
+
+	if (root && stage && track && panels.length) {
+		const allVias = Array.from(root.querySelectorAll<HTMLElement>("[data-via]"));
+		const count = root.querySelector<HTMLElement>("[data-count]");
+		const bar = root.querySelector<HTMLElement>("[data-progress]");
+		const pad = (n: number) => String(n).padStart(2, "0");
+		const setOn = (via: HTMLElement | null, on: boolean) => via?.toggleAttribute("data-on", on);
+		// Como las pinta el servidor: solo la vía del puesto actual, encendida.
+		const resetVias = () => allVias.forEach((v) => setOn(v, v.hasAttribute("data-actual")));
+		const itemsOf = (panel: HTMLElement) => panel.querySelectorAll<HTMLElement>("[data-item]");
+
+		const mm = gsap.matchMedia();
+
+		// Escritorio: escenario fijado con la pista horizontal.
+		mm.add(MQ.desktop, () => {
+			root.dataset.pinned = ""; // primero la disposición en fila, luego las medidas
+
+			const vias = panels.map((p) => p.querySelector<HTMLElement>("[data-hvia]"));
+			const lits = panels.map((p) => p.querySelector<HTMLElement>("[data-lit]")); // null en el último
+			vias.forEach((v) => setOn(v, false));
+
+			// Posiciones de los paneles dentro de la pista (offsetLeft no cuenta los transform).
+			let lefts: number[] = [];
+			let widths: number[] = [];
+			const measure = () => {
+				lefts = panels.map((p) => p.offsetLeft);
+				widths = panels.map((p) => p.offsetWidth);
+			};
+			measure();
+
+			// La entrada: mientras el escenario sube hasta fijarse, la pista sale de la primera
+			// vía y llega a la zona activa. Luego la cabeza se queda en la zona activa y la pista
+			// corre por debajo.
+			let entry = 0;
+			let current = -1;
+			const clips: string[] = [];
+			const paint = () => {
+				if (!lefts.length) return;
+				const x = Number(gsap.getProperty(track, "x")) || 0;
+				const base = lefts[0];
+				const head = base + entry * (stage.clientWidth * ACTIVE - x - base);
+				let reached = 0;
+				panels.forEach((_, i) => {
+					const on = head > lefts[i] + VIA;
+					setOn(vias[i], on);
+					if (on) reached = i;
+					const lit = lits[i];
+					if (!lit) return;
+					const shown = gsap.utils.clamp(0, widths[i], head - lefts[i]);
+					const clip = `inset(-4px ${(widths[i] - shown).toFixed(1)}px -4px 0px)`;
+					if (clip !== clips[i]) {
+						lit.style.clipPath = clip;
+						clips[i] = clip;
+					}
+				});
+				if (reached !== current && count) {
+					current = reached;
+					count.textContent = pad(reached + 1);
+				}
+			};
+
+			// Estos dos van antes del pin: miden el escenario en su sitio, por encima del pin.
+			ScrollTrigger.create({
+				trigger: stage,
+				start: "top 75%",
+				end: "top top",
+				onUpdate: (self) => {
+					entry = self.progress;
+					paint();
+				},
+				onRefresh: (self) => {
+					entry = self.progress;
+				},
+			});
+			// El primer panel ya está a la vista al fijarse: su texto entra con el scroll vertical.
+			gsap.from(itemsOf(panels[0]), {
+				y: 40,
+				autoAlpha: 0,
+				duration: 1.1,
+				ease: EASE,
+				stagger: 0.08,
+				scrollTrigger: { trigger: stage, start: "top 60%", once: true },
+			});
+
+			const distance = () => Math.max(0, track.offsetWidth - stage.clientWidth);
+			const move = gsap.to(track, {
+				x: () => -distance(),
+				ease: "none", // obligatorio para containerAnimation
+				scrollTrigger: {
+					trigger: stage,
+					pin: true,
+					start: "top top",
+					end: () => `+=${distance()}`,
+					scrub: 1,
+					invalidateOnRefresh: true,
+				},
+			});
+
+			// Progreso y pista, al ritmo de la pista ya suavizada (no del scroll en bruto).
+			const setProgress = bar ? gsap.quickSetter(bar, "scaleX") : () => {};
+			setProgress(0);
+			move.eventCallback("onUpdate", () => {
+				setProgress(move.progress());
+				paint();
+			});
+
+			const onRefresh = () => {
+				measure();
+				paint();
+			};
+			ScrollTrigger.addEventListener("refresh", onRefresh);
+
+			panels.forEach((panel, i) => {
+				// El año, a contrapié: se queda atrás mientras su panel avanza.
+				gsap.fromTo(
+					panel.querySelector("[data-year]"),
+					{ xPercent: -14 },
+					{
+						xPercent: 14,
+						ease: "none",
+						scrollTrigger: {
+							trigger: panel,
+							containerAnimation: move,
+							start: "left right",
+							end: "right left",
+							scrub: true,
+						},
+					},
+				);
+				if (i === 0) return;
+				// Los demás entran por la derecha: su texto sube en cascada al asomar.
+				gsap.from(itemsOf(panel), {
+					y: 40,
+					autoAlpha: 0,
+					duration: 1.1,
+					ease: EASE,
+					stagger: 0.08,
+					scrollTrigger: { trigger: panel, containerAnimation: move, start: "left 85%", once: true },
+				});
+			});
+
+			paint();
+
+			return () => {
+				delete root.dataset.pinned;
+				ScrollTrigger.removeEventListener("refresh", onRefresh);
+				lits.forEach((lit) => lit?.style.removeProperty("clip-path"));
+				if (count) count.textContent = "01";
+				resetVias();
+			};
+		});
+
+		// Móvil: la línea de tiempo vertical se dibuja con el scroll y cada vía se enciende al pasar.
+		mm.add(MQ.mobile, () => {
+			panels.forEach((panel) => {
+				const year = panel.querySelector<HTMLElement>("[data-year]");
+				gsap.from(year ? [year, ...itemsOf(panel)] : itemsOf(panel), {
+					y: 40,
+					autoAlpha: 0,
+					duration: 1.1,
+					ease: EASE,
+					stagger: 0.08,
+					scrollTrigger: { trigger: panel, start: "top 85%", once: true },
+				});
+
+				const seg = panel.querySelector<HTMLElement>("[data-vlit]");
+				if (seg) {
+					gsap.fromTo(
+						seg,
+						{ scaleY: 0, autoAlpha: 1 },
+						{
+							scaleY: 1,
+							ease: "none",
+							scrollTrigger: { trigger: seg, start: "top 65%", end: "bottom 65%", scrub: true },
+						},
+					);
+				}
+
+				const via = panel.querySelector<HTMLElement>("[data-vvia]");
+				if (via) {
+					setOn(via, false);
+					ScrollTrigger.create({
+						trigger: via,
+						start: "center 65%",
+						onEnter: () => setOn(via, true),
+						onLeaveBack: () => setOn(via, false),
+					});
+				}
+			});
+
+			return () => resetVias();
+		});
+	}
+</script>

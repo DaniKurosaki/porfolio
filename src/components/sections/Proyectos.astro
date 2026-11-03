@@ -1,7 +1,320 @@
 ---
-// Provisional: lo sustituye la sección definitiva.
+import FadeUp from "@/components/motion/FadeUp.astro";
+import RevealImage from "@/components/motion/RevealImage.astro";
+import RevealLines from "@/components/motion/RevealLines.astro";
+import Roll from "@/components/motion/Roll.astro";
+import SectionLabel from "@/components/motion/SectionLabel.astro";
+import { PROYECTOS } from "@/data/proyectos";
+import { TEXTOS } from "@/data/textos";
+
+const t = TEXTOS.proyectos;
+const pad = (n: number) => String(n).padStart(2, "0");
+const total = pad(PROYECTOS.length);
 ---
 
-<section id="proyectos" data-chapter="04" class="bg-ink flex min-h-[60svh] items-center">
-	<div class="shell text-label">Proyectos (provisional)</div>
+<!--
+	Capítulo 04 · Proyectos: imagen fija que cambia con la fila activa.
+
+	Sin atributo (móvil, sin JS o con movimiento reducido) es una lista en columna: cada
+	fila lleva su propia captura en línea y todas se leen a plena intensidad. En escritorio
+	con movimiento, el script pone `data-tracking` en la sección: las capturas en línea se
+	esconden, aparece a la izquierda una columna `sticky` (CSS, no un pin) con las cuatro
+	capturas apiladas, y la fila que cruza el 55 % de la pantalla (o la que tiene el ratón
+	encima, que manda) enciende su captura y deja las demás filas al 35 %.
+
+	La cabecera va fuera de la columna fija: lo fijo tiene que caber entero en la pantalla.
+-->
+<section
+	id="proyectos"
+	data-chapter="04"
+	class="group/track relative overflow-x-clip bg-ink pb-28 pt-32 text-paper lg:pb-40 lg:pt-48"
+>
+	<div class="shell">
+		<SectionLabel index="04" text="Proyectos" />
+
+		<div class="mt-16 lg:mt-24 lg:grid lg:grid-cols-12 lg:gap-x-5">
+			<RevealLines as="h2" class="display text-huge lg:col-span-8">
+				{t.titulo.antes}{" "}<em class="accent">{t.titulo.acento}</em>
+			</RevealLines>
+			<RevealLines
+				as="p"
+				delay={0.15}
+				class="mt-10 max-w-[42ch] text-lg text-paper/70 md:text-xl lg:col-span-4 lg:col-start-9 lg:mt-0 lg:self-end"
+			>
+				{t.intro}
+			</RevealLines>
+		</div>
+
+		<div class="mt-20 lg:mt-32 lg:grid lg:grid-cols-12 lg:gap-x-5">
+			<!--
+				Columna fija: solo existe con data-tracking. `self-start` para que no se estire
+				hasta la altura de la lista (un sticky tan alto como su fila no tiene recorrido),
+				y el marco limitado al hueco que deja la pantalla bajo la cabecera: 7rem arriba,
+				el pie del marco y un respiro abajo (16:10, así que el ancho es el alto por 1,6).
+			-->
+			<div
+				class="hidden lg:sticky lg:top-28 lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:self-start group-data-[tracking]/track:block"
+			>
+				<div
+					data-frame
+					class="relative aspect-[16/10] w-[min(100%,calc((100svh_-_11rem)*1.6))] overflow-hidden bg-ink-2"
+				>
+					{
+						PROYECTOS.map((p, i) => (
+							<img
+								data-shot
+								data-active={i === 0 ? "" : undefined}
+								src={p.imagen}
+								alt={p.alt}
+								width="1200"
+								height="675"
+								loading="lazy"
+								decoding="async"
+								class="shot absolute inset-0 h-full w-full object-cover object-top"
+							/>
+						))
+					}
+				</div>
+				<div
+					aria-hidden="true"
+					class="mt-5 flex w-[min(100%,calc((100svh_-_11rem)*1.6))] items-center justify-between gap-6 text-label text-paper/60"
+				>
+					<span class="flex items-center gap-3">
+						<span class="led led-pulse"></span>
+						<span data-count class="tabular-nums">01 / {total}</span>
+					</span>
+					<span data-caption class="truncate">{PROYECTOS[0]?.nombre}</span>
+				</div>
+			</div>
+
+			<ol
+				class="border-b border-paper/15 lg:col-span-12 lg:row-start-1 group-data-[tracking]/track:col-span-5 group-data-[tracking]/track:col-start-8"
+			>
+				{
+					PROYECTOS.map((p, i) => (
+						<li
+							data-row
+							data-nombre={p.nombre}
+							data-active={i === 0 ? "" : undefined}
+							class="row relative py-12 lg:grid lg:grid-cols-12 lg:gap-x-5 lg:py-16 group-data-[tracking]/track:block group-data-[tracking]/track:min-h-[64svh]"
+						>
+							<span
+								data-row-rule
+								aria-hidden="true"
+								class="absolute inset-x-0 top-0 h-px origin-left bg-paper/15"
+							/>
+
+							<div class="mb-10 lg:col-span-5 lg:mb-0 group-data-[tracking]/track:hidden">
+								<RevealImage
+									src={p.imagen}
+									alt={p.alt}
+									width={1200}
+									height={675}
+									class="aspect-[16/10] w-full bg-ink-2"
+									imgClass="object-top"
+								/>
+							</div>
+
+							<FadeUp stagger={0.07} class="lg:col-span-6 lg:col-start-7">
+								<div class="flex items-baseline justify-between gap-6 text-label">
+									<span class="tabular-nums text-volt">{pad(i + 1)}</span>
+									<span class="text-right text-paper/50">{p.fechas}</span>
+								</div>
+								<h3 class="display text-big mt-8">{p.nombre}</h3>
+								<p class="label-wrap text-label mt-5 text-paper/60">{p.rol}</p>
+								<p class="mt-8 max-w-[42ch] text-lg text-paper/70 md:text-xl">{p.descripcion}</p>
+								<p class="label-wrap text-label mt-8 text-paper/50">{p.tags.join(" / ")}</p>
+								{p.cifra && (
+									<div class="mt-10 flex items-end gap-5">
+										{/* En una sola línea: un salto entre el número y el sufijo pintaría un espacio. */}
+										<p class="cifra display text-big tabular-nums">
+											<span data-counter data-to={p.cifra.valor}>{p.cifra.valor}</span>{p.cifra.sufijo}
+										</p>
+										<p class="label-wrap text-label max-w-[24ch] pb-1 text-paper/60">{p.cifra.texto}</p>
+									</div>
+								)}
+								<div class="mt-10">
+									<a
+										href={p.link}
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label={`${p.linkTexto}: ${p.nombre}`}
+										data-cursor={t.cursor}
+										class="group/link inline-flex items-center gap-3 rounded-full border border-paper/25 px-6 py-4 text-label transition-colors duration-500 hover:border-volt hover:text-volt"
+									>
+										<Roll text={p.linkTexto} />
+										<span
+											aria-hidden="true"
+											class="inline-block transition-transform duration-500 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
+										>
+											↗
+										</span>
+									</a>
+								</div>
+							</FadeUp>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</div>
 </section>
+
+<style>
+	/* Las capturas del marco se funden y se asientan. Es una transición CSS: el script solo
+	   mueve `data-active`, así que no hay tween que matar si la fila cambia a mitad. */
+	.shot {
+		opacity: 0;
+		transform: scale(1.08);
+		transition:
+			opacity 0.9s cubic-bezier(0.19, 1, 0.22, 1),
+			transform 1.4s cubic-bezier(0.19, 1, 0.22, 1);
+	}
+	.shot[data-active] {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	/* Solo con seguimiento se atenúan las filas que no están activas. */
+	[data-tracking] .row {
+		transition: opacity 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+	}
+	[data-tracking] .row:not([data-active]) {
+		opacity: 0.35;
+	}
+
+	/* La cifra, en contorno. `.text-outline` de global.css pinta el trazo con currentColor,
+	   que allí es transparente: aquí el trazo lleva su color. */
+	.cifra {
+		color: transparent;
+		-webkit-text-stroke: 1px rgb(var(--paper));
+	}
+
+	/* `text-label` va con interlineado 1: las etiquetas largas (rol, tags) necesitan aire si
+	   saltan de línea. */
+	.label-wrap {
+		line-height: 1.6;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.shot,
+		.row {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	import { EASE, MQ, ScrollTrigger, gsap } from "@/scripts/motion";
+
+	const root = document.querySelector<HTMLElement>("#proyectos");
+	if (root) initProyectos(root);
+
+	function initProyectos(root: HTMLElement) {
+		const rows = Array.from(root.querySelectorAll<HTMLElement>("[data-row]"));
+		const shots = Array.from(root.querySelectorAll<HTMLElement>("[data-shot]"));
+		const frame = root.querySelector<HTMLElement>("[data-frame]");
+		const count = root.querySelector<HTMLElement>("[data-count]");
+		const caption = root.querySelector<HTMLElement>("[data-caption]");
+		const pad = (n: number) => String(n).padStart(2, "0");
+
+		// La fila que marca el scroll y la que tiene el ratón (o el foco) encima, que manda.
+		let scrolled = 0;
+		let hovered: number | null = null;
+
+		const flag = (el: HTMLElement, on: boolean) => {
+			if (on) el.dataset.active = "";
+			else delete el.dataset.active;
+		};
+		const paint = () => {
+			const active = hovered ?? scrolled;
+			rows.forEach((row, i) => flag(row, i === active));
+			shots.forEach((shot, i) => flag(shot, i === active));
+			if (count) count.textContent = `${pad(active + 1)} / ${pad(rows.length)}`;
+			if (caption) caption.textContent = rows[active]?.dataset.nombre ?? "";
+		};
+
+		const mm = gsap.matchMedia();
+
+		// Escritorio con movimiento: columna fija y seguimiento de la fila activa.
+		mm.add(MQ.desktop, () => {
+			root.dataset.tracking = ""; // primero la disposición, luego las medidas
+			scrolled = 0;
+			hovered = null;
+			paint();
+
+			const cleanups: (() => void)[] = [];
+			rows.forEach((row, i) => {
+				ScrollTrigger.create({
+					trigger: row,
+					start: "top 55%",
+					end: "bottom 55%",
+					onToggle: (self) => {
+						if (!self.isActive) return;
+						scrolled = i;
+						paint();
+					},
+				});
+
+				// Solo el ratón: en táctil un toque dispara pointerenter y la fila se quedaría encendida.
+				const enter = (e: PointerEvent) => {
+					if (e.pointerType !== "mouse") return;
+					hovered = i;
+					paint();
+				};
+				const focus = () => {
+					hovered = i;
+					paint();
+				};
+				const leave = () => {
+					hovered = null;
+					paint();
+				};
+				row.addEventListener("pointerenter", enter);
+				row.addEventListener("pointerleave", leave);
+				row.addEventListener("focusin", focus);
+				row.addEventListener("focusout", leave);
+				cleanups.push(() => {
+					row.removeEventListener("pointerenter", enter);
+					row.removeEventListener("pointerleave", leave);
+					row.removeEventListener("focusin", focus);
+					row.removeEventListener("focusout", leave);
+				});
+			});
+
+			// El marco se destapa de abajo arriba la primera vez que entra.
+			if (frame) {
+				gsap.fromTo(
+					frame,
+					{ clipPath: "inset(100% 0% 0% 0%)" },
+					{
+						clipPath: "inset(0% 0% 0% 0%)",
+						duration: 1.5,
+						ease: "expo.inOut",
+						scrollTrigger: { trigger: frame, start: "top 85%", once: true },
+					},
+				);
+			}
+
+			return () => {
+				cleanups.forEach((fn) => fn());
+				delete root.dataset.tracking;
+				scrolled = 0;
+				hovered = null;
+				paint();
+			};
+		});
+
+		// En todos los tamaños con movimiento: el filete de cada fila se dibuja al llegar.
+		mm.add(MQ.motion, () => {
+			root.querySelectorAll<HTMLElement>("[data-row-rule]").forEach((rule) => {
+				gsap.from(rule, {
+					scaleX: 0,
+					duration: 1.4,
+					ease: EASE,
+					scrollTrigger: { trigger: rule, start: "top 90%", once: true },
+				});
+			});
+		});
+	}
+</script>
